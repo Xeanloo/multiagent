@@ -198,49 +198,67 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
     """
+    bestAction = None
+    bestScore = None
 
     def alphaBeta(self, agent, depth, gameState, alpha, beta):
+        tempAction = ""
+        global bestAction
+        global bestScore
+
         if depth == self.depth or gameState.isWin() or gameState.isLose():
             return self.evaluationFunction(gameState)
 
         if agent == 0:
-            v = -float("inf")
+            value = -float("inf")
             for action in gameState.getLegalActions(agent):
-                v = max(v, self.alphaBeta(1, depth, gameState.generateSuccessor(agent, action), alpha, beta))
-                alpha = max(alpha, v)
-                if beta <= alpha:
-                    break
+                tempValue = self.alphaBeta(1, depth, gameState.generateSuccessor(agent, action), alpha, beta)
+                if isinstance(tempValue, tuple):
+                    tempAction = tempValue[1]
+                    tempValue = tempValue[0]
+                if tempValue > value:
+                    value = tempValue
+                    tempAction = action
+                    if depth == 0:
+                        bestAction = tempAction
+                        bestScore = value
+                if value > beta:
+                    return value
+                alpha = max(alpha, value)
         else:
-            v = float("inf")
+            value = float("inf")
+            if agent == gameState.getNumAgents()-1:
+                newAgent = 0
+                newDepth = depth+1
+            else:
+                newAgent = agent+1
+                newDepth = depth
+
             for action in gameState.getLegalActions(agent):
-                if agent == gameState.getNumAgents()-1:
-                    newAgent = 0
-                    newDepth = depth + 1
-                else:
-                    newAgent = agent + 1
-                    newDepth = depth
-                v = min(v, self.alphaBeta(newAgent, newDepth, gameState.generateSuccessor(agent, action), alpha, beta))
-                beta = min(beta, v)
-                if beta <= alpha:
-                    break
-        return v
+                tempValue = self.alphaBeta(newAgent, newDepth, gameState.generateSuccessor(agent, action), alpha, beta)
+                if isinstance(tempValue, tuple):
+                    tempAction = tempValue[1]
+                    tempValue = tempValue[0]
+                if tempValue < value:
+                    value = tempValue
+                if value < alpha:
+                    return value
+                beta = min(beta, value)
+
+        return value, tempAction
 
     def getAction(self, gameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        legalMoves = gameState.getLegalActions(0)
+        global bestAction
+        global bestScore
         alpha = -float('inf')
         beta = float('inf')
 
-        # Choose one of the best actions
-        scores = [self.alphaBeta(1, 0, gameState.generateSuccessor(0, action), alpha, beta) for action in legalMoves]
-        bestScore = max(scores)
-        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
-
-        return legalMoves[chosenIndex]
+        self.alphaBeta(0, 0, gameState, alpha, beta)
+        return bestAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
