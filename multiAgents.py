@@ -187,7 +187,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         legalMoves = gameState.getLegalActions(0)
 
         # Choose one of the best actions
-        scores = [self.miniMax(0, 0, gameState.generateSuccessor(0, action)) for action in legalMoves]
+        scores = [self.miniMax(1, 0, gameState.generateSuccessor(0, action)) for action in legalMoves]
         bestScore = max(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
@@ -235,7 +235,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         beta = float('inf')
 
         # Choose one of the best actions
-        scores = [self.alphaBeta(0, 0, gameState.generateSuccessor(0, action), alpha, beta) for action in legalMoves]
+        scores = [self.alphaBeta(1, 0, gameState.generateSuccessor(0, action), alpha, beta) for action in legalMoves]
         bestScore = max(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
