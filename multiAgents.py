@@ -254,7 +254,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     bestScore = None
 
     def expectimax(self, agent, depth, gameState):
-        tempAction = ""
         global bestAction
 
         if depth == self.depth or gameState.isWin() or gameState.isLose():
@@ -264,28 +263,20 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             value = -float("inf")
             for action in gameState.getLegalActions(agent):
                 tempValue = self.expectimax(1, depth, gameState.generateSuccessor(agent, action))
-                if isinstance(tempValue, tuple):
-                    tempAction = tempValue[1]
-                    tempValue = tempValue[0]
                 if tempValue > value:
                     value = tempValue
-                    tempAction = action
-                    if depth == 0:
-                        bestAction = tempAction
+                    bestAction = action if depth == 0 else bestAction
             return value
         else:
-            value = 0
+            possibleActions = gameState.getLegalActions(agent)
             if agent == gameState.getNumAgents() - 1:
                 newAgent = 0
                 newDepth = depth + 1
             else:
                 newAgent = agent + 1
                 newDepth = depth
-
-            for action in gameState.getLegalActions(agent):
-                value += self.expectimax(newAgent, newDepth, gameState.generateSuccessor(agent, action))
-
-            return value/len(gameState.getLegalActions(agent))
+            value = sum(self.expectimax(newAgent, newDepth, gameState.generateSuccessor(agent, action)) for action in possibleActions)
+            return value/len(possibleActions)
 
     def getAction(self, gameState):
         """
