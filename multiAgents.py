@@ -16,7 +16,7 @@ from util import manhattanDistance
 import random, util
 
 from game import Agent
-
+bestAction = None
 
 class ReflexAgent(Agent):
     """
@@ -198,6 +198,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
     """
+    global bestAction
     bestAction = None
 
     def alphaBeta(self, agent, depth, gameState, alpha, beta):
@@ -250,7 +251,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
-    bestAction = None
+    global bestAction
     bestScore = None
 
     def expectimax(self, agent, depth, gameState):
@@ -297,7 +298,48 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood().asList()
+    newCaps = currentGameState.getCapsules()
+    capsCount = len(newCaps)
+    foodCount = len(newFood)
+
+    newGhostStates = currentGameState.getGhostStates()
+    newGhostPos = currentGameState.getGhostPositions()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+    newScore = currentGameState.getScore()
+
+    #if an unscared ghost ist too close, run away asap
+    ghostIndex = 0
+    for ghostPos in newGhostPos:
+        if manhattanDistance(newPos, ghostPos) < 2 and newScaredTimes[ghostIndex] == 0:
+            return -999999
+        ghostIndex += 1
+
+    # Calculate the distance to the closest food, if there's any left
+    minFoodDist = 999999
+    if foodCount > 0:
+        for food in newFood:
+            newDist = manhattanDistance(newPos, food)
+            if newDist < minFoodDist:
+                minFoodDist = newDist
+    else:
+        minFoodDist = 0.1
+
+    # Calculate the distance to the closest capsule, if there's any left
+    minCapsuleDist = 999999
+    if capsCount > 0:
+        for capsule in newCaps:
+            newDist = manhattanDistance(newPos, capsule)
+            if newDist < minCapsuleDist:
+                minCapsuleDist = newDist
+    else:
+        minCapsuleDist = 0.1
+
+    # return sum of all parameters multiplied with their respective weights
+    return newScore + 10.0/minFoodDist - 10.0/minCapsuleDist - capsCount*2 - foodCount*100
+
 
 # Abbreviation
 better = betterEvaluationFunction
